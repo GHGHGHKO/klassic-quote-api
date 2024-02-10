@@ -1,0 +1,5 @@
+### Get all quotes
+GET {{host}}/v1/quotes
+
+### Get random quote
+GET {{host}}/v1/random-quote
