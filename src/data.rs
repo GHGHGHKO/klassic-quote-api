@@ -64,7 +64,7 @@ impl QuoteStore {
     }
 
     pub async fn add_quotes(&mut self) {
-        let quotes_file = fs::read_to_string("./the-war-of-flower.json")
+        let quotes_file = fs::read_to_string("./src/quotes/the-war-of-flower.json")
             .await
             .unwrap();
         let quotes: Vec<QuoteItem> = serde_json::from_str(&quotes_file).unwrap();

@@ -9,7 +9,11 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
+use tower_http::trace;
 use tower_http::trace::TraceLayer;
+use tracing::Level;
+use tracing_appender::rolling;
+use tracing_subscriber::fmt::writer::MakeWriterExt;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use data::QuoteStore;
@@ -19,11 +23,17 @@ type Db = Arc<RwLock<QuoteStore>>;
 
 #[tokio::main]
 async fn main() {
+    let info_file = rolling::daily("./logs", "info")
+        .with_max_level(tracing::Level::INFO);
+
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "quote_axum=debug,tower_http=debug".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "quote_axum=info,tower_http=info".into()),
         ))
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer()
+            .with_writer(info_file)
+            .with_ansi(false)
+        )
         .init();
 
     // QuoteStore::get_random_quote(&Default::default(), 0);
@@ -36,7 +46,13 @@ async fn main() {
             .route("/random-quote", get(get_random_quote)),
         )
         .with_state(db)
-        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(trace::DefaultMakeSpan::new()
+                    .level(Level::INFO))
+                .on_response(trace::DefaultOnResponse::new()
+                    .level(Level::INFO)));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("listening on {}", addr);
