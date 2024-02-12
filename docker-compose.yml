@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  klassic-quote-api:
+    image: gudrb963/klassic-quote-api:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
