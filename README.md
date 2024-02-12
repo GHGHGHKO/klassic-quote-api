@@ -35,4 +35,5 @@ Axum + In memory DB
 
 ## TO-DO
 - [ ] API 문서 만들기  
-- [ ] 타짜 이외에 영화 명대사 추가하기  
+- [ ] 타짜 이외에 영화 명대사 추가하기
+- [ ] add renovate[bot]
