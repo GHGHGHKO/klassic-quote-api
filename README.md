@@ -3,7 +3,7 @@
 Axum + In memory DB
 
 ## API 정보
-### URL : https://goose-auth.i234.me:1010
+### URL : https://klassic-quote-api.mooo.com
 
 ### endpoints
 - /v1/quotes (GET)
