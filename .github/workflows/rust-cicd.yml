@@ -43,7 +43,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          platforms: linux/amd64,linux/arm64,linux/x86_64
+          platforms: linux/arm64
           push: true
           tags: gudrb963/klassic-quote-api:latest
     
