@@ -6,7 +6,7 @@ Axum + In memory DB
 ### URL : https://klassic-quote-api.mooo.com
 
 ### endpoints
-- /v1/quotes (GET)
+- https://klassic-quote-api.mooo.com/v1/quotes (GET)
 ```json
 [
   {
@@ -24,7 +24,7 @@ Axum + In memory DB
 ...
 ```
 
-- /v1/random-quote (GET)
+- https://klassic-quote-api.mooo.com/v1/random-quote (GET)
 ```json
 {
   "id": 59,
