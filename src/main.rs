@@ -4,11 +4,13 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::extract::{Query, State};
 use axum::{Json, Router};
-use axum::http::StatusCode;
+use axum::http::{HeaderValue, Method, StatusCode};
+use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
+use tower_http::cors::CorsLayer;
 use tower_http::trace;
 use tower_http::trace::TraceLayer;
 use tracing::Level;
@@ -40,6 +42,12 @@ async fn main() {
     let db = Db::default();
     db.write().await.add_quotes().await;
 
+    let cors = CorsLayer::new()
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_credentials(true)
+        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+
     let app = Router::new()
         .nest("/v1", Router::new()
             .route("/quotes", get(get_quotes))
@@ -52,7 +60,8 @@ async fn main() {
                 .make_span_with(trace::DefaultMakeSpan::new()
                     .level(Level::INFO))
                 .on_response(trace::DefaultOnResponse::new()
-                    .level(Level::INFO)));
+                    .level(Level::INFO)))
+        .layer(cors);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("listening on {}", addr);
