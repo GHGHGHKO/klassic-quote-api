@@ -46,4 +46,11 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: gudrb963/klassic-quote-api:latest
-    
+  deploy:
+    needs: [build, docker]
+    runs-on: self-hosted
+    steps:
+      - name: run deploy.sh
+        run: |
+          cd /applications/klassic-quote-api
+          ./deploy.sh
