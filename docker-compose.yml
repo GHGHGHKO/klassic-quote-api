@@ -2,8 +2,15 @@ version: '3.8'
 
 services:
   klassic-quote-api:
+    container_name: klassic-quote-api
     image: gudrb963/klassic-quote-api:latest
+    networks:
+      - nginx-proxy-manager_default
     ports:
       - "3000:3000"
     volumes:
       - ./logs:/app/logs
+
+networks:
+  nginx-proxy-manager_default:
+    external: true
