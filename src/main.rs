@@ -4,12 +4,13 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::extract::{Query, State};
 use axum::{Json, Router};
-use axum::http::StatusCode;
+use axum::http::{request::Parts as RequestParts, HeaderValue, Method, StatusCode};
+use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::trace;
 use tower_http::trace::TraceLayer;
 use tracing::Level;
@@ -25,7 +26,7 @@ type Db = Arc<RwLock<QuoteStore>>;
 #[tokio::main]
 async fn main() {
     let info_file = rolling::daily("./logs", "info")
-        .with_max_level(Level::ERROR);
+        .with_max_level(tracing::Level::INFO);
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -42,7 +43,16 @@ async fn main() {
     db.write().await.add_quotes().await;
 
     let cors = CorsLayer::new()
-        .allow_credentials(false);
+        // allow `GET` and `POST` when accessing the resource
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_origin(AllowOrigin::predicate(
+            |origin: &HeaderValue, _request_parts: &RequestParts| {
+                origin.as_bytes().ends_with(b".vercel.app")
+            },
+        ))
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_credentials(true)
+        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
     let app = Router::new()
         .nest("/v1", Router::new()
