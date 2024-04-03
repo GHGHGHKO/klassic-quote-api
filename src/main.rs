@@ -4,8 +4,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::extract::{Query, State};
 use axum::{Json, Router};
-use axum::http::{HeaderValue, Method, StatusCode};
-use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use tokio::sync::RwLock;
@@ -26,7 +25,7 @@ type Db = Arc<RwLock<QuoteStore>>;
 #[tokio::main]
 async fn main() {
     let info_file = rolling::daily("./logs", "info")
-        .with_max_level(tracing::Level::INFO);
+        .with_max_level(Level::ERROR);
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -43,10 +42,7 @@ async fn main() {
     db.write().await.add_quotes().await;
 
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_credentials(true)
-        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+        .allow_credentials(false);
 
     let app = Router::new()
         .nest("/v1", Router::new()
