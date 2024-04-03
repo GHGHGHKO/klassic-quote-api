@@ -50,9 +50,7 @@ jobs:
     needs: [build, docker]
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: deploy
+      - name: run deploy.sh
         run: |
-          docker-compose pull
-          docker-compose up -d
+          cd /applications/klassic-quote-api
+          ./deploy.sh
