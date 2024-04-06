@@ -4,6 +4,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use tokio::fs;
+use crate::movie_enum::str_to_movie;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QuoteItem {
@@ -66,11 +67,17 @@ impl QuoteStore {
 
     pub fn get_name_random_quote(&self, name: String)
         -> Option<&IdentifiableQuoteItem> {
-        let filtered_quotes: Vec<&IdentifiableQuoteItem> = self.store.values()
-            .filter(|quote| quote.item.name == name)
-            .collect();
-        let random_offset = rand::thread_rng().gen_range(0..filtered_quotes.len());
-        Some(filtered_quotes[random_offset])
+        match str_to_movie(name) {
+            Ok(movie_name) => {
+                let filtered_quotes: Vec<&IdentifiableQuoteItem> = self.store.values()
+                    .filter(|quote| quote.item.name == movie_name)
+                    .collect();
+                let random_offset = rand::thread_rng().gen_range(0..filtered_quotes.len());
+                Some(filtered_quotes[random_offset])
+            }
+            Err(_) => None
+        }
+
     }
 
     pub async fn add_quotes(&mut self) {

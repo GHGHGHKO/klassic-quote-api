@@ -1,4 +1,5 @@
 mod data;
+mod movie_enum;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
