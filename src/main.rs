@@ -2,7 +2,7 @@ mod data;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
-use axum::extract::{Query, State};
+use axum::extract::{Path, Query, State};
 use axum::{Json, Router};
 use axum::http::{request::Parts as RequestParts, HeaderValue, Method, StatusCode};
 use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
@@ -55,7 +55,9 @@ async fn main() {
     let app = Router::new()
         .nest("/v1", Router::new()
             .route("/quotes", get(get_quotes))
-            .route("/random-quote", get(get_random_quote)),
+            .route("/random-quote", get(get_random_quote))
+            .nest("/quotes/:name", Router::new()
+                .route("/random-quote", get(get_name_random_quote))),
         )
         .with_state(db)
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
@@ -87,6 +89,18 @@ async fn get_random_quote(pagination: Option<Query<Pagination>>,
     let quote = db.read().await;
     let Query(pagination) = pagination.unwrap_or_default();
     if let Some(item) = quote.get_random_quote(pagination) {
+        Json(item).into_response()
+    } else {
+        (StatusCode::NOT_FOUND, "Not found").into_response()
+    }
+}
+
+async fn get_name_random_quote(Path(name): Path<String>,
+                               State(db): State<Db>)
+    -> impl IntoResponse {
+    let quote = db.read().await;
+    if let Some(item) = quote
+        .get_name_random_quote(name) {
         Json(item).into_response()
     } else {
         (StatusCode::NOT_FOUND, "Not found").into_response()

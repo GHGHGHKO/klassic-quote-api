@@ -64,6 +64,15 @@ impl QuoteStore {
         self.store.get(&random_offset)
     }
 
+    pub fn get_name_random_quote(&self, name: String)
+        -> Option<&IdentifiableQuoteItem> {
+        let filtered_quotes: Vec<&IdentifiableQuoteItem> = self.store.values()
+            .filter(|quote| quote.item.name == name)
+            .collect();
+        let random_offset = rand::thread_rng().gen_range(0..filtered_quotes.len());
+        Some(filtered_quotes[random_offset])
+    }
+
     pub async fn add_quotes(&mut self) {
         let quotes_dir = "./src/quotes";
         let mut dir = fs::read_dir(quotes_dir).await.unwrap();
