@@ -52,12 +52,6 @@ async fn main() {
         .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
-    let localhost_cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_credentials(true)
-        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
-
     let app = Router::new()
         .nest("/v1", Router::new()
             .route("/quotes", get(get_quotes))
@@ -71,8 +65,7 @@ async fn main() {
                     .level(Level::INFO))
                 .on_response(trace::DefaultOnResponse::new()
                     .level(Level::INFO)))
-        .layer(vercel_cors)
-        .layer(localhost_cors);
+        .layer(vercel_cors);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("listening on {}", addr);
