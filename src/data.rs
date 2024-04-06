@@ -9,6 +9,7 @@ use tokio::fs;
 pub struct QuoteItem {
     pub quote: String,
     pub author: String,
+    pub name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -64,14 +65,22 @@ impl QuoteStore {
     }
 
     pub async fn add_quotes(&mut self) {
-        let quotes_file = fs::read_to_string("./src/quotes/the-war-of-flower.json")
-            .await
-            .unwrap();
-        let quotes: Vec<QuoteItem> = serde_json::from_str(&quotes_file).unwrap();
-        for quote in quotes {
-            let id = self.id_generator.fetch_add(1, Ordering::Relaxed);
-            let new_item = IdentifiableQuoteItem::new(id, quote);
-            self.store.insert(id, new_item.clone());
+        let quotes_dir = "./src/quotes";
+        let mut dir = fs::read_dir(quotes_dir).await.unwrap();
+
+        while let Some(entry) = dir.next_entry().await.unwrap() {
+            let file_path = entry.path();
+
+            if file_path.is_file() {
+                let quotes_file = fs::read_to_string(file_path).await.unwrap();
+                let quotes: Vec<QuoteItem> = serde_json::from_str(&quotes_file).unwrap();
+
+                for quote in quotes {
+                    let id = self.id_generator.fetch_add(1, Ordering::Relaxed);
+                    let new_item = IdentifiableQuoteItem::new(id, quote);
+                    self.store.insert(id, new_item.clone());
+                }
+            }
         }
     }
 }
