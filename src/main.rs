@@ -42,14 +42,19 @@ async fn main() {
     let db = Db::default();
     db.write().await.add_quotes().await;
 
-    let cors = CorsLayer::new()
-        // allow `GET` and `POST` when accessing the resource
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+    let vercel_cors = CorsLayer::new()
         .allow_origin(AllowOrigin::predicate(
             |origin: &HeaderValue, _request_parts: &RequestParts| {
                 origin.as_bytes().ends_with(b".vercel.app")
             },
         ))
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_credentials(true)
+        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+
+    let localhost_cors = CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
         .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
@@ -67,9 +72,10 @@ async fn main() {
                     .level(Level::INFO))
                 .on_response(trace::DefaultOnResponse::new()
                     .level(Level::INFO)))
-        .layer(cors);
+        .layer(vercel_cors)
+        .layer(localhost_cors);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
     println!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
