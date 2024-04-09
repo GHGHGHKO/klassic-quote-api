@@ -5,6 +5,9 @@ Axum + In memory DB
 ## API 정보
 ### URL : https://klassic-quote-api.mooo.com
 
+## Web 정보
+### URL : https://klassic-quote.vercel.app/
+
 ### endpoints
 - https://klassic-quote-api.mooo.com/v1/quotes (GET)
 ```json
@@ -34,6 +37,6 @@ Axum + In memory DB
 ```
 
 ## TO-DO
-- [ ] API 문서 만들기  
+- [x] API 문서 만들기  
 - [ ] 타짜 이외에 영화 명대사 추가하기
 - [ ] add renovate[bot]
