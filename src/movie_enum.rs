@@ -4,6 +4,7 @@ pub fn str_to_movie(name: String) -> Result<&'static str, &'static str> {
         "the-war-of-flower" => "타짜",
         "nameless-gangster" => "범죄와의 전쟁",
         "wish" => "바람",
+        "the-man-from-nowhere" => "아저씨",
         _ => return Err("404 Not Found: Unknown movie title"),
     })
 }
