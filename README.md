@@ -8,6 +8,9 @@ Axum + In memory DB
 ## Web 정보
 ### URL : https://klassic-quote.vercel.app/
 
+## Status page
+### URL : https://ghghghko.github.io/upptime/
+
 ### endpoints
 - https://klassic-quote-api.mooo.com/v1/quotes (GET)
 ```json
