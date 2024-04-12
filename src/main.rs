@@ -5,13 +5,12 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::extract::{Path, Query, State};
 use axum::{Json, Router};
-use axum::http::{request::Parts as RequestParts, HeaderValue, Method, StatusCode};
-use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
-use tower_http::cors::{AllowOrigin, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_http::trace;
 use tower_http::trace::TraceLayer;
 use tracing::Level;
@@ -43,16 +42,6 @@ async fn main() {
     let db = Db::default();
     db.write().await.add_quotes().await;
 
-    let vercel_cors = CorsLayer::new()
-        .allow_origin(AllowOrigin::predicate(
-            |origin: &HeaderValue, _request_parts: &RequestParts| {
-                origin.as_bytes().ends_with(b".vercel.app")
-            },
-        ))
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_credentials(true)
-        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
-
     let app = Router::new()
         .nest("/v1", Router::new()
             .route("/quotes", get(get_quotes))
@@ -68,7 +57,7 @@ async fn main() {
                     .level(Level::INFO))
                 .on_response(trace::DefaultOnResponse::new()
                     .level(Level::INFO)))
-        .layer(vercel_cors);
+        .layer(CorsLayer::permissive());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("listening on {}", addr);
